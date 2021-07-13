@@ -18,22 +18,17 @@ from django.urls import path, include
 from rest_framework import routers
 
 import todo.views
-import monitoring.views
-import main.views
 from main.views import index
 
 router = routers.DefaultRouter()
-router.register(r'todo', todo.views.TaskAPI, basename='todo_api')
-router.register(r'todo_add', todo.views.TaskAddAPI, basename='todo_add_api')
-router.register(r'todo_del', todo.views.TaskDelAPI, basename='todo_del_api')
+router.register('todo', todo.views.TaskAPI, basename='todo_api')
+router.register('todo_add', todo.views.TaskAddAPI, basename='todo_add_api')
+router.register('todo_del', todo.views.TaskDelAPI, basename='todo_del_api')
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', index, name='main'),
+    path('api/', include('rest_framework.urls', namespace='rest_framework')),
     path('admin/', admin.site.urls),
     path('todo/', todo.views.task, name='todo'),
-    # path('mon/', monitoring.views.index, name='mon'),
-    # path('mon/ajax', monitoring.views.ajax, name='mon_ajax'),
-    path('', index, name='main'),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('api/', include('rest_framework.urls', namespace='rest_framework')),
 ]
