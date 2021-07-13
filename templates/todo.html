@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+        <div class="row">
+            <div class="col s12">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="input-field col s3">
+                        <input id="title" type="text" class="validate">
+                        <label for="title">Title</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="desc" type="text" class="validate">
+                        <label for="desc">Description</label>
+                    </div>
+                    <div class="input-field col s3">
+                        <button class="btn waves-effect waves-light" id="todo_btn_add" name="action" onclick="todo_action_add()">Add
+                            <i class="material-icons right" >add</i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul class="collapsible popout" hidden id="todo_list"></ul>
+{% endblock %}
+
+{% block script %}
+<script>
+    const URL = "/api/todo/";
+    const URL_ADD = "/api/todo_add/";
+    const URL_DEL = "/api/todo_del/";
+    const csrf = $("input[name=csrfmiddlewaretoken]").val()
+    const todoList = $('#todo_list');
+    const todo_btn_add = $('#todo_btn_add');
+    const collapsible = $('.collapsible');
+
+    $(document).ready(function (){
+        getTasks();
+        collapsible.collapsible()
+    }
+
+    );
+    function getTasks(){
+        $.getJSON(URL)
+              .done(function (data) {
+                  todoList.empty()
+                  if (data.length > 0)
+                      todoList.removeAttr('hidden')
+                  else
+                      todoList.attr("hidden",true)
+                  $.each(data, function (id, obj) {
+                      todoList.append(
+                          '<li>' +
+                            '<div class="collapsible-header">' + obj.title + '<a onClick="todo_action_del('+ obj.id +')" class="secondary-content"><i class="material-icons">delete_forever</i></a></div>' +
+                            '<div class="collapsible-body"><p>'+ obj.description + '</p></div></li>'
+                      )
+               })
+           })
+    }
+    function action_for_a_class(elm, class_name, action='add', delay=0){
+        if (action === 'add') {
+            if (!elm.hasClass(class_name))
+                if(delay !== 0)
+                    setTimeout(() => elm.addClass(class_name), delay)
+                else
+                    elm.addClass(class_name)
+        } else {
+            if (elm.hasClass(class_name))
+                if(delay !== 0)
+                    setTimeout(() => elm.removeClass(class_name), delay)
+                else
+                    elm.removeClass('pulse')
+        }
+    }
+    function todo_action_add() {
+        action_for_a_class(todo_btn_add, 'pulse')
+        $.ajax({
+            url: URL_ADD,
+            method: 'post',
+            headers:{"X-CSRFToken": csrf},
+            data: {
+                'title': $('#title').val(),
+                'description': $('#desc').val(),
+            },
+            success : () => {
+                action_for_a_class(todo_btn_add, 'pulse', 'del', 3000)
+                success()
+            },
+            error : () => {
+                action_for_a_class(todo_btn_add, 'pulse', 'del')
+                error()
+            }
+        })
+    }
+    function todo_action_del(task_id) {
+        collapsible
+            .collapsible('close')
+            .collapsible('destroy')
+        $.ajax({
+            url: URL_DEL+task_id+'/',
+            method: 'delete',
+            headers:{"X-CSRFToken": csrf},
+            success: () => {
+                collapsible.collapsible()
+                success('Удалено')
+            },
+            error : () => {
+                collapsible.collapsible()
+                error()
+            }
+        })
+    }
+    function success(message){
+        const mess= message || 'Добавлено'
+        M.toast({html: mess})
+        getTasks()
+    }
+
+    function error(message){
+        const mess= message || 'Произошла ошибка!'
+        M.toast({html: mess})
+        getTasks()
+    }
+</script>
+{% endblock %}

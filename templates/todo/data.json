@@ -1,0 +1,11 @@
+{
+  'todo': [
+  {% for todo in todoList%}
+    {
+      "id": {{ todo.id }}
+      "title": "{{ todo.title }}",
+      "description": "{{ todo.description }}"
+    },
+  {% endfor %}
+  ]
+}

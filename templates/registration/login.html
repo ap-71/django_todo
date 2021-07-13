@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+        <div class="row">
+            <div class="col s12">
+            {% if form.errors %}
+              <p>Your username and password didn't match. Please try again.</p>
+            {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+            {% if next %}
+              {% if user.is_authenticated %}
+                <p>Your account doesn't have access to this page. To proceed,
+                please login with an account that has access.</p>
+              {% else %}
+                <p>Please login to see this page.</p>
+              {% endif %}
+            {% endif %}
+            </div>
+        </div>
+        <div class="row">
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+
+                <div class="input-field col s4">
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                </div>
+                <div class="input-field col s4">
+                    {{ form.password.label_tag }}
+                    {{ form.password }}
+                </div>
+                <div class="input-field col s4">
+                    <button class="btn waves-effect waves-light" type="submit" id="todo_btn_add" name="action">Login
+                    </button>
+{#                    <input type="submit" value="login" />#}
+                </div>
+                <input type="hidden" name="next" value="{{ next }}" />
+        </form>
+        </div>
+
+
+        {# Assumes you setup the password_reset view in your URLconf #}
+    <div class="row">
+        <div class="col s4">
+            <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+        </div>
+    </div>
+{% endblock %}
